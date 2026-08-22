@@ -1,8 +1,35 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fbfaf7;
+  --foreground: #1a2420;
+
+  /* Brand: deep institutional teal + warm gold accent */
+  --color-brand-50: #eefbf6;
+  --color-brand-100: #d4f4e9;
+  --color-brand-200: #a9e8d4;
+  --color-brand-300: #74d5ba;
+  --color-brand-400: #3fb99c;
+  --color-brand-500: #1f9d82;
+  --color-brand-600: #147d69;
+  --color-brand-700: #0f6355;
+  --color-brand-800: #0c4f45;
+  --color-brand-900: #0a3f38;
+  --color-brand-950: #052622;
+
+  --color-gold-50: #fdf9ed;
+  --color-gold-100: #faf0cd;
+  --color-gold-200: #f3dd96;
+  --color-gold-300: #ecc65e;
+  --color-gold-400: #e4ac35;
+  --color-gold-500: #cc8f1f;
+  --color-gold-600: #a86f18;
+  --color-gold-700: #855218;
+  --color-gold-800: #6e4319;
+  --color-gold-900: #5d391a;
+
+  --shadow-elevated: 0 1px 2px rgba(10, 40, 35, 0.04), 0 8px 24px -8px rgba(10, 40, 35, 0.12);
+  --shadow-elevated-lg: 0 2px 4px rgba(10, 40, 35, 0.04), 0 24px 48px -12px rgba(10, 40, 35, 0.18);
 }
 
 @theme inline {
@@ -10,17 +37,87 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
+  --font-display: var(--font-display);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --color-brand-50: var(--color-brand-50);
+  --color-brand-100: var(--color-brand-100);
+  --color-brand-200: var(--color-brand-200);
+  --color-brand-300: var(--color-brand-300);
+  --color-brand-400: var(--color-brand-400);
+  --color-brand-500: var(--color-brand-500);
+  --color-brand-600: var(--color-brand-600);
+  --color-brand-700: var(--color-brand-700);
+  --color-brand-800: var(--color-brand-800);
+  --color-brand-900: var(--color-brand-900);
+  --color-brand-950: var(--color-brand-950);
+
+  --color-gold-50: var(--color-gold-50);
+  --color-gold-100: var(--color-gold-100);
+  --color-gold-200: var(--color-gold-200);
+  --color-gold-300: var(--color-gold-300);
+  --color-gold-400: var(--color-gold-400);
+  --color-gold-500: var(--color-gold-500);
+  --color-gold-600: var(--color-gold-600);
+  --color-gold-700: var(--color-gold-700);
+  --color-gold-800: var(--color-gold-800);
+  --color-gold-900: var(--color-gold-900);
+
+  --shadow-elevated: var(--shadow-elevated);
+  --shadow-elevated-lg: var(--shadow-elevated-lg);
+
+  --animate-fade-in: fade-in 0.6s ease-out both;
+  --animate-shimmer: shimmer 2.2s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes shimmer {
+    from {
+      background-position: -200% 0;
+    }
+    to {
+      background-position: 200% 0;
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+::selection {
+  background: var(--color-brand-200);
+  color: var(--color-brand-900);
+}
+
+/* Respect users who've asked for reduced motion at the OS level. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
