@@ -31,6 +31,7 @@ export interface Application {
 
   future_goals: string;
   aadhaar_document_path: string;
+  parent_aadhaar_document_path: string | null;
 
   eligibility_confirmed: boolean;
   status: ApplicationStatus;
