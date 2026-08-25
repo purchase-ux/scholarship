@@ -12,9 +12,7 @@ export function PublicFooter() {
               <br />
               Family Private Trust
             </p>
-            <p className="mt-1 text-xs text-brand-300">
-              Jhunjhunu, Rajasthan 333001, India
-            </p>
+            <p className="mt-1 text-xs text-brand-300">Jhunjhunu, Rajasthan 333001, India</p>
           </div>
         </div>
 
@@ -24,8 +22,8 @@ export function PublicFooter() {
           <p>+91 94133 67369</p>
         </div>
       </div>
-      <div className="border-t border-white/10 py-4 text-center text-xs text-brand-400">
-        © {new Date().getFullYear()} Shrimati Ramadevi Omprakash Kejriwal Family Private Trust. All decisions rest solely with the Trust.
+      <div className="border-t border-white/10 px-6 py-4 text-center text-xs leading-5 text-brand-400">
+        © {new Date().getFullYear()} Shrimati Ramadevi Omprakash Kejriwal Family Private Trust. All rights reserved to the Trust. The Trust reserves the right to cancel, withdraw, or discontinue a scholarship at any time, subject to applicable law.
       </div>
     </footer>
   );
