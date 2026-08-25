@@ -13,38 +13,23 @@ export type ApplyState = {
   fieldErrors?: Record<string, string[] | undefined>;
 };
 
-const GENERIC_SAVE_ERROR =
-  "We couldn't save your application. Please try again in a moment.";
-const GENERIC_UNEXPECTED_ERROR =
-  "Something went wrong submitting your application. Please try again.";
+const GENERIC_SAVE_ERROR = "We couldn't save your application. Please try again in a moment.";
+const GENERIC_UNEXPECTED_ERROR = "Something went wrong submitting your application. Please try again.";
 
-export type UploadFolder = "aadhaar" | "class10" | "class12" | "final-semester";
-const UPLOAD_FOLDERS: UploadFolder[] = ["aadhaar", "class10", "class12", "final-semester"];
+export type UploadFolder = "aadhaar" | "parent-aadhaar" | "class10" | "class12" | "final-semester";
+const UPLOAD_FOLDERS: UploadFolder[] = ["aadhaar", "parent-aadhaar", "class10", "class12", "final-semester"];
 
-// Documents are uploaded directly from the browser straight to Supabase
-// Storage (see src/app/apply/page.tsx), never through this — or any — Server
-// Action body. Vercel's serverless functions hard-cap request bodies at
-// ~4.5MB regardless of next.config.ts's own bodySizeLimit, and a real
-// submission's 2-3 required documents routinely exceed that on their own.
-// This action only ever hands out a short-lived signed upload URL (the
-// caller still needs the private `documents` bucket's service-role access to
-// get one, since the bucket has no public insert policy) — the actual bytes
-// never pass through our server.
 export async function createUploadUrl(folder: UploadFolder, ext: "pdf" | "jpg" | "png") {
-  if (!UPLOAD_FOLDERS.includes(folder)) {
-    throw new Error("Invalid upload folder");
-  }
+  if (!UPLOAD_FOLDERS.includes(folder)) throw new Error("Invalid upload folder");
 
   try {
     const supabase = createAdminClient();
     const path = `${folder}/${crypto.randomUUID()}.${ext}`;
     const { data, error } = await supabase.storage.from("documents").createSignedUploadUrl(path);
-
     if (error || !data) {
       console.error(`[apply] Failed to create signed upload url for ${folder}:`, error?.message);
       throw new Error(GENERIC_UPLOAD_ERROR);
     }
-
     return { path, token: data.token };
   } catch (err) {
     if (err instanceof Error && err.message === GENERIC_UPLOAD_ERROR) throw err;
@@ -53,15 +38,9 @@ export async function createUploadUrl(folder: UploadFolder, ext: "pdf" | "jpg" |
   }
 }
 
-export async function submitApplication(
-  _prevState: ApplyState,
-  formData: FormData
-): Promise<ApplyState> {
+export async function submitApplication(_prevState: ApplyState, formData: FormData): Promise<ApplyState> {
   const parsed = applicationSchema.safeParse(Object.fromEntries(formData.entries()));
-
-  if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors };
-  }
+  if (!parsed.success) return { fieldErrors: parsed.error.flatten().fieldErrors };
 
   const data = parsed.data;
 
@@ -75,6 +54,7 @@ export async function submitApplication(
 
   const uploadedPaths = [
     data.aadhaar_document_path,
+    data.parent_aadhaar_document_path,
     data.class10_marksheet_path,
     data.class12_marksheet_path,
     data.final_semester_marksheet_path,
@@ -106,6 +86,7 @@ export async function submitApplication(
         parent_annual_income: data.parent_annual_income,
         future_goals: data.future_goals,
         aadhaar_document_path: data.aadhaar_document_path,
+        parent_aadhaar_document_path: data.parent_aadhaar_document_path,
         eligibility_confirmed: data.eligibility_confirmed,
       })
       .select("id")
@@ -113,16 +94,10 @@ export async function submitApplication(
 
     if (insertError || !inserted) {
       console.error("[apply] Insert failed:", insertError?.message);
-      // The documents already made it to storage but no row references them —
-      // clean them up rather than leaving orphaned PII behind.
-      if (uploadedPaths.length > 0) {
-        await supabase.storage.from("documents").remove(uploadedPaths);
-      }
+      if (uploadedPaths.length > 0) await supabase.storage.from("documents").remove(uploadedPaths);
       return { error: GENERIC_SAVE_ERROR };
     }
 
-    // Best-effort notifications — a failure here must never stop a student's
-    // submission from succeeding, since the application is already saved.
     const host = (await headers()).get("host") ?? "localhost:3000";
     const protocol = host.startsWith("localhost") ? "http" : "https";
     const applicationUrl = `${protocol}://${host}/admin/applications/${inserted.id}`;
@@ -154,9 +129,7 @@ export async function submitApplication(
     }
   } catch (err) {
     console.error("[apply] Unexpected error saving application:", err);
-    if (uploadedPaths.length > 0) {
-      await supabase.storage.from("documents").remove(uploadedPaths);
-    }
+    if (uploadedPaths.length > 0) await supabase.storage.from("documents").remove(uploadedPaths);
     return { error: GENERIC_UNEXPECTED_ERROR };
   }
 
